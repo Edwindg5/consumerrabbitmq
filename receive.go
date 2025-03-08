@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	rabbitMQURL := "amqp://admin:admin@34.229.163.67:5672/"
+	rabbitMQURL := "amqp://admin:admin@52.7.35.94:5672/"
 
 	// Conectar a RabbitMQ
 	conn, err := amqp.Dial(rabbitMQURL)
