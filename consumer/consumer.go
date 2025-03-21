@@ -80,7 +80,7 @@ func main() {
 }
 
 func actualizarEstadoEnAPI1(pedido Pedido) error {
-    api1URL := "http://localhost:8080/pedidos/actualizar" // Nueva ruta para actualizar sin ID
+    api1URL := "http://34.199.34.207:8080/pedidos/actualizar" // Nueva ruta para actualizar sin ID
     data, _ := json.Marshal(map[string]interface{}{
         "producto": pedido.Producto,
         "cantidad": pedido.Cantidad,
