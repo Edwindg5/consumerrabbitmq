@@ -149,7 +149,7 @@ func enviarNotificacionAPI(data []byte) error {
 		return err
 	}
 
-	api1NotificacionURL := "http://localhost:8080/notificaciones"
+	api1NotificacionURL := "http://34.199.34.207:8080/notificaciones"
 
 	// 🔍 Imprimir datos antes de enviarlos
 	log.Println("📤 Datos enviados a API1:", string(jsonData))
