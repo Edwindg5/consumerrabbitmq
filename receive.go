@@ -18,6 +18,8 @@ func main() {
 	}
 	defer conn.Close()
 
+	log.Println("✅ Conectado a RabbitMQ con éxito")
+
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("❌ Error al abrir un canal: %s", err)
@@ -33,6 +35,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ Error al consumir mensajes de 'pedidos_queue': %s", err)
 	}
+
+	log.Println("📡 Esperando mensajes de la cola 'pedidos_queue'...")
 
 	go func() {
 		for msg := range msgs {
