@@ -1,4 +1,3 @@
-// receive.go
 package main
 
 import (
@@ -6,24 +5,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/streadway/amqp"
 )
-
-var (
-	clients   = make(map[*websocket.Conn]bool)
-	clientsMu sync.Mutex
-	upgrader  = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-)
-
-
 
 func main() {
 	rabbitMQURL := "amqp://admin:admin@52.7.35.94:5672/"
@@ -49,17 +34,9 @@ func main() {
 		log.Fatalf("❌ Error al consumir mensajes de 'pedidos_queue': %s", err)
 	}
 
-	http.HandleFunc("/ws", handleConnections)
-	go func() {
-		log.Println("📡 Servidor WebSocket escuchando en :8081")
-		log.Fatal(http.ListenAndServe(":8081", nil))
-	}()
-
 	go func() {
 		for msg := range msgs {
 			log.Printf("📩 Pedido recibido: %s", msg.Body)
-
-			broadcastMessage(msg.Body)
 
 			if err := enviarNotificacionAPI(msg.Body); err != nil {
 				log.Printf("❌ Error al enviar la transacción a API1: %s", err)
@@ -70,47 +47,6 @@ func main() {
 	}()
 
 	select {}
-}
-
-func handleConnections(w http.ResponseWriter, r *http.Request) {
-	ws, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("❌ Error al actualizar a WebSocket:", err)
-		return
-	}
-
-	clientsMu.Lock()
-	clients[ws] = true
-	clientsMu.Unlock()
-
-	log.Println("✅ Cliente conectado")
-
-	for {
-		if _, _, err := ws.ReadMessage(); err != nil {
-			log.Println("❌ Cliente desconectado")
-
-			clientsMu.Lock()
-			delete(clients, ws)
-			clientsMu.Unlock()
-
-			ws.Close()
-			break
-		}
-	}
-}
-
-func broadcastMessage(message []byte) {
-	clientsMu.Lock()
-	defer clientsMu.Unlock()
-
-	for client := range clients {
-		err := client.WriteMessage(websocket.TextMessage, message)
-		if err != nil {
-			log.Println("❌ Error al enviar mensaje:", err)
-			client.Close()
-			delete(clients, client)
-		}
-	}
 }
 
 func enviarNotificacionAPI(data []byte) error {
